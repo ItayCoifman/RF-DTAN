@@ -10,9 +10,8 @@ import matplotlib.pyplot as plt
 
 
 def plot_mean_signal(
-    X_aligned_within_class, X_within_class, ratio, class_num, dataset_name, savefig=False
+        X_aligned_within_class, X_within_class, ratio, class_num, dataset_name, savefig=False
 ):
-
     # check data dim
     if len(X_aligned_within_class.shape) < 3:
         X_aligned_within_class = np.expand_dims(X_aligned_within_class, axis=-1)
@@ -32,8 +31,7 @@ def plot_mean_signal(
 
     # set figure size
     [w, h] = ratio  # width, height
-    plt.style.use("seaborn-darkgrid")
-
+    plt.style.use("seaborn-v0_8-darkgrid")
 
     title_font = 18
     rows = 2
@@ -89,7 +87,7 @@ def plot_mean_signal(
         ax3.plot(X_aligned_within_class[:, channel, :].T)
         # if channel == 0:
         #     ax3 = f.add_subplot(rows, cols, plot_idx)
-        
+
         # if n_channels == 1:
         #     ax3.plot(X_aligned_within_class[:, channel, :].T)
         # else:
@@ -120,7 +118,6 @@ def plot_mean_signal(
 
         plot_idx += 1
 
-
         plt.suptitle(f"{dataset_name}: Class-{class_num} Channel-{channel}", fontsize=title_font + 2)
         plt.tight_layout(rect=[0, 0.03, 1, 0.95])
     if savefig:
@@ -130,21 +127,12 @@ def plot_mean_signal(
         )
 
 
-
-def plot_signals(model, device, dataset_name, sets_dict, N=10, seed=0, savefig=False):
+def plot_signals(model, device, dataset_name, sets_dict, N=10, seed=0, savefig=False, save_dir=None):
     # Close any remaining plots
     plt.close("all")
     torch.manual_seed(seed)
     np.random.seed(seed)
     with torch.no_grad():
-        UCR_data = UCR_UEA_datasets()
-        # tslearn format (N, sz, C). Torch needs (N, C, sz)
-        # X_train, y_train, X_test, y_test = UCR_data.load_dataset(dataset_name)
-
-        # X_train, y_train, X_test, y_test = processed_UCR_data(
-        #     X_train, y_train, X_test, y_test, replace_nans=False, swap_channel_dim=True
-        # )
-        
         set_names = ["train", "test"]
 
         with torch.no_grad():
@@ -162,7 +150,8 @@ def plot_signals(model, device, dataset_name, sets_dict, N=10, seed=0, savefig=F
 
                     Xk = Xk.cpu().numpy()
                     Xk_aligned = outputs["data"].cpu().numpy()
-
+                    # clean so that saving figures doesn't break
+                    plt.close("all")
                     plot_mean_signal(
                         Xk_aligned,
                         Xk,
@@ -171,4 +160,9 @@ def plot_signals(model, device, dataset_name, sets_dict, N=10, seed=0, savefig=F
                         dataset_name=f"{dataset_name}-{set_name}",
                         savefig=savefig,
                     )
-                    plt.show()
+                    if save_dir is not None:
+                        Path(save_dir).mkdir(parents=True, exist_ok=True)
+                        for i, fig in enumerate([plt.figure(n) for n in plt.get_fignums()]):
+                            fig.savefig(f"{save_dir}/{dataset_name}_{set_name}_class-{label}_ch{i}.png", dpi=200)
+                    else:
+                        plt.show()
