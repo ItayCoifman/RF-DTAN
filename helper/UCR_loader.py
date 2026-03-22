@@ -113,6 +113,7 @@ def processed_UCR_data(
     onehot=False,
     swap_channel_dim=False,
     replace_nans=True,
+    scale=True,
     resample=-1,
 ):
     """
@@ -135,12 +136,13 @@ def processed_UCR_data(
     - X_test: Processed testing data as numpy array.
     - y_test: Processed testing labels as numpy array.
     """
-
-    scaler = TimeSeriesScalerMeanVariance(mu=0.0, std=1.0)
-
-    for c in range(X_train.shape[-1]):
-        X_train[:, :, c] = np.squeeze(scaler.fit_transform(X_train[:, :, c]))
-        X_test[:, :, c] = np.squeeze(scaler.fit_transform(X_test[:, :, c]))
+    if scale:
+        scaler = TimeSeriesScalerMeanVariance(mu=0.0, std=1.0)
+        for c in range(X_train.shape[-1]):
+            X_train[:, :, c] = np.squeeze(scaler.fit_transform(X_train[:, :, c]))
+            X_test[:, :, c] = np.squeeze(scaler.fit_transform(X_test[:, :, c]))
+    else:
+        print("Not scaling data. If your data has different scales across channels, consider setting scale=True.")
 
     if resample > 0:
         X_train = TimeSeriesResampler(sz=resample).fit_transform(np.squeeze(X_train))
