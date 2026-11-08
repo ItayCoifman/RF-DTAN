@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "rf_dtan"
+version = "0.1.0"
+description = ""
+authors = [
+    { name = "Ron Shapira Weber", email = "temp@post.co.il" }
+]
+license = { text = "MIT" }
+readme = "README.md"
+requires-python = ">=3.7"
+dependencies = []
+
+[tool.setuptools]
+# This is the "magic" line that maps the name to the root
+packages = ["rf_dtan"]
+package-dir = {"rf_dtan" = "."}
